@@ -4,4 +4,5 @@ project(code)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(code
-    src/main.cpp)
+    src/main.cpp
+        src/decoder.h)
