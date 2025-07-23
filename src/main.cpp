@@ -1,33 +1,58 @@
 #include<iostream>
-#include"decoder.h"
-Decoder::instruction ins[5000];// instructions
-int cntIns=0;
-unsigned int reg[32];// registers
-unsigned int pc;// pc pointer
-unsigned int mem[100000];// memory
+#include<bitset>
+#include"decoder.hpp"
+#include"memory.hpp"
+#include"alu.hpp"
+#include"lsb.hpp"
+#include"rob.hpp"
+#include"rs.hpp"
+#include"coder.hpp"
+void work()
+{
+    while(true)
+    {
+        tick();
+        // some units work here.
+        // the sequence can be changed arbitrarily.
+        aluWork();
+        lsbWork();
+        robWork();
+        decoderWork();
+        IFC.work();
+        rsWork();
+        Imem.work();
+        Dmem.work();
+        if(Clk==10000)
+            break;
+    }
+}
 int main()
 {
-    const auto ch=new char*[4];
-    for(int i=0;i<4;i++)
-        ch[i]=new char[30];
-    int kd=0;
-    while(scanf("%s",ch[kd])!=EOF)
+    // std::string input;
+    // while(true)
+    // {
+    //     std::getline(std::cin,input);
+    //     std::cout<<hexize(coder(strToInstruction(input)))<<std::endl;
+    //     std::cout<<instructionDecoder(coder(strToInstruction(input)))<<std::endl;
+    // }
+    char ch[30];
+    unsigned int addr=0;
+    while(scanf("%s",ch)!=EOF)
     {
-        if(ch[kd][0]=='@')
-            continue;
-        if(ch[kd][0]=='!')
-            break;
-        kd++;
-        if(kd==4)
+        if(ch[0]=='@')
         {
-            ins[++cntIns]=Decoder::launchDecoder(ch);
-            if(ins[cntIns].op.empty())
-                cntIns--;
-            kd=0;
+            addr=0;
+            const int len=strlen(ch);
+            for(int i=1;i<len;i++)
+                addr=(addr<<4)+singleHexToDec(ch[i]);
+            continue;
         }
+        if(ch[0]=='!')
+            break;
+        Imem.init(addr,(singleHexToDec(ch[0])<<4)|singleHexToDec(ch[1]));
+        addr++;
     }
-    for(int i=1;i<=cntIns;i++)
-        std::cout<<ins[i]<<std::endl;
+    work();
 
     return 0;
 }
