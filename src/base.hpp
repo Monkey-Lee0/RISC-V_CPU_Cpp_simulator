@@ -136,17 +136,8 @@ public:
 };
 inline ReOrderBuffer rob;
 
-constexpr LSBcnt
 class LoadStoreBuffer
 {
-    chronicVariant<bool> busy[RScnt];
-    chronicVariant<instruction> op[RScnt];
-    chronicVariant<int> vj[RScnt];
-    chronicVariant<int> vk[RScnt];
-    chronicVariant<unsigned int> qj[RScnt];
-    chronicVariant<unsigned int> qk[RScnt];
-    chronicVariant<unsigned int> dest[RScnt];
-    chronicVariant<int> A[RScnt];
 };
 inline LoadStoreBuffer lsb;
 
