@@ -86,7 +86,7 @@ inline void robWork()
             }
             // write register
             const auto dest=rob.dest[pos].get();
-            if(op<=19)
+            if(op<=19||op==34||op==36||op==37)
             {
                 if(rf.busy[dest].get())
                 {

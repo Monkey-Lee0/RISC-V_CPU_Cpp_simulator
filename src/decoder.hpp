@@ -33,13 +33,15 @@ inline void decoderWork()
             PC.set(PC.get()+4);
         else if(ins.op<=33)
             PC.set(PC.get()+ins.p0);
+        else if(ins.op==34)
+            PC.set(PC.get()+ins.p1);
         // Insert new item into rob
         rob.tl.set(rob.tl.get()+1);
         const int pos=rob.tl.get()&(ROBcnt-1);
         rob.ok[pos].set(false);
         rob.op[pos].set(ins);
         rob.curPC[pos].set(PC.get());
-        if(ins.op<=24)
+        if(ins.op<=24||ins.op==34||ins.op==36||ins.op==37)
             rob.dest[pos].set(ins.p0);
         // Insert new item into lsb
         if(ins.op>=20&&ins.op<=27)
@@ -64,12 +66,27 @@ inline void decoderWork()
                 lsb.qd[pos].set(0);
         }
         // Insert new item into rs
-        if(ins.op<=33)
+        if(ins.op<=34||ins.op==36||ins.op==37)
             for(int i=0;i<ROBcnt;i++)
                 if(!rs.busy[i].get())
                 {
                     rs.busy[i].set(true);
                     rs.op[i].set(ins);
+                    if(ins.op==34)
+                    {
+                        rs.vj[i].set(PC.get()),rs.vk[i].set(4);
+                        rs.qj[i].set(0),rs.qk[i].set(0);
+                    }
+                    if(ins.op==36)
+                    {
+                        rs.vj[i].set(PC.get()),rs.vk[i].set(ins.p1<<12);
+                        rs.qj[i].set(0),rs.qk[i].set(0);
+                    }
+                    if(ins.op==37)
+                    {
+                        rs.vj[i].set(0),rs.vk[i].set(ins.p1<<12);
+                        rs.qj[i].set(0),rs.qk[i].set(0);
+                    }
                     if(ins.op<=33)
                     {
                         if(rf.busy[ins.p1].get())
@@ -98,14 +115,14 @@ inline void decoderWork()
                             rs.A[i].set(ins.p0);
                         rs.qk[i].set(0);
                     }
-                    if(ins.op<=19||(ins.op>=28&&ins.op<=33))
+                    if(ins.op<=19||(ins.op>=28&&ins.op<=37))
                         rs.dest[i].set(rob.tl.get());
                     else
                         rs.dest[i].set(lsb.tl.get());
                     break;
                 }
         // Change RF status
-        if(ins.op<=24)
+        if(ins.op<=24||ins.op==34||ins.op==36||ins.op==37)
         {
             rf.busy[ins.p0].set(true);
             rf.robID[ins.p0].set(rob.tl.get());

@@ -29,7 +29,7 @@ inline void rsWork()
     for(int i=0;i<RScnt;i++)
         if(rs.busy[i].get()&&!rs.qj[i].get()&&!rs.qk[i].get())
         {
-            if(rs.op[i].get().op<=19)
+            if(rs.op[i].get().op<=19||rs.op[i].get().op==34||rs.op[i].get().op==36||rs.op[i].get().op==37)
                 for(int j=0;j<ALUcnt;j++)
                 {
                     if(!ALU.busy[j].get())
@@ -38,7 +38,7 @@ inline void rsWork()
                         ALU.busy[j].set(true);
                         ALU.op[j].set(rs.op[i].get());
                         ALU.s1[j].set(rs.vj[i].get());
-                        if(rs.op[i].get().op<=10)
+                        if(rs.op[i].get().op<=10||rs.op[i].get().op==34||rs.op[i].get().op==36||rs.op[i].get().op==37)
                             ALU.s2[j].set(rs.vk[i].get());
                         else if(rs.op[i].get().op<=19)
                             ALU.s2[j].set(rs.A[i].get());
@@ -72,7 +72,7 @@ inline void rsWork()
                         BPU.ID[j].set(rs.dest[i].get());
                         break;
                     }
-
+            break;
         }
 }
 

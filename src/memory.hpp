@@ -35,6 +35,11 @@ public:
                         nPC+=ins.p0;
                         break;
                     }
+                    if(ins.op==34)
+                    {
+                        nPC+=ins.p1;
+                        break;
+                    }
                 }
                 if(i%4==3)
                     nPC+=4;
