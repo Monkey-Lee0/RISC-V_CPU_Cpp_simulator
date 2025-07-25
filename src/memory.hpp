@@ -3,60 +3,59 @@
 
 #include "base.hpp"
 
-class IFetchCache
+inline void IFCwork()
 {
-public:
-    chronicVariant<unsigned int> q[64];
-    chronicVariant<unsigned int> hd,tl;
-    chronicVariant<unsigned int> predictedPC; // the PC of tl
-    void work()
+    if(rob.flush.get())
     {
-        if(rob.flush.get())
-        {
-            predictedPC.set(rob.rightPC.get()+4);
-            tl.set(hd.get());
-            return ;
-        }
-        if(tl.get()-hd.get()<=48&&Imem.ok.get())
-        {
-            Imem.ok.set(false);
-            Imem.busy.set(false);
-            int nPC=predictedPC.get(),ntl=tl.get();
-            for(int i=0;i<16;i++)
-            {
-                q[(tl.get()+i)&63].set(Imem.output[i].get());
-                ntl++;
-                if(i%4==3)
-                {
-                    const auto ins=instructionDecoder(Imem.output[i-3].get()|(Imem.output[i-2].get()<<8)|
-                        (Imem.output[i-1].get()<<16)|(Imem.output[i].get()<<24));
-                    if(ins.op>=28&&ins.op<=33)
-                    {
-                        nPC+=ins.p0;
-                        break;
-                    }
-                    if(ins.op==34)
-                    {
-                        nPC+=ins.p1;
-                        break;
-                    }
-                }
-                if(i%4==3)
-                    nPC+=4;
-            }
-            tl.set(ntl);
-            predictedPC.set(nPC);
-        }
-        else if(tl.get()-hd.get()<=48&&!Imem.busy.get())
-        {
-            Imem.busy.set(true);
-            Imem.addr.set(predictedPC.get());
-            Imem.clk.set(Clk);
-            Imem.typ.set(true);
-        }
+        IFC.predictedPC.set(rob.rightPC.get()+4);
+        IFC.tl.set(IFC.hd.get());
+        IFC.bubble.set(false);
+        return ;
     }
-};
-
-inline IFetchCache IFC;
+    if(IFC.bubble.get())
+        return ;
+    if(IFC.tl.get()-IFC.hd.get()<=48&&Imem.ok.get())
+    {
+        Imem.ok.set(false);
+        Imem.busy.set(false);
+        int nPC=IFC.predictedPC.get(),ntl=IFC.tl.get();
+        for(int i=0;i<16;i++)
+        {
+            IFC.q[(IFC.tl.get()+i)&63].set(Imem.output[i].get());
+            ntl++;
+            if(i%4==3)
+            {
+                const auto ins=instructionDecoder(Imem.output[i-3].get()|(Imem.output[i-2].get()<<8)|
+                    (Imem.output[i-1].get()<<16)|(Imem.output[i].get()<<24));
+                if(ins.op>=28&&ins.op<=33)
+                {
+                    nPC+=ins.p0;
+                    break;
+                }
+                if(ins.op==34)
+                {
+                    nPC+=ins.p1;
+                    break;
+                }
+                if(ins.op==35)
+                {
+                    IFC.bubble.set(true);
+                    break;
+                }
+            }
+            if(i%4==3)
+                nPC+=4;
+        }
+        IFC.tl.set(ntl);
+        IFC.predictedPC.set(nPC);
+    }
+    else if(IFC.tl.get()-IFC.hd.get()<=48&&!Imem.busy.get())
+    {
+        Imem.busy.set(true);
+        Imem.addr.set(IFC.predictedPC.get());
+        Imem.clk.set(Clk);
+        Imem.typ.set(true);
+    }
+}
 
 #endif

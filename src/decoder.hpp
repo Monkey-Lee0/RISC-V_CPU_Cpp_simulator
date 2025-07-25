@@ -26,8 +26,8 @@ inline void decoderWork()
         const auto ins=instructionDecoder(data);
         if(ins.op<=0||ins.op>=40)
             return ;
-        if(ins.op>0&&ins.op<40)
-            std::cerr<<"Clock "<<Clk<<" Decoder "<<ins<<std::endl;
+        // if(ins.op>0&&ins.op<40)
+            // std::cerr<<"Clock "<<Clk<<" Decoder "<<ins<<" "<<rob.tl.get()<<std::endl;
         // update PC
         if(ins.op<=27)
             PC.set(PC.get()+4);
@@ -35,13 +35,15 @@ inline void decoderWork()
             PC.set(PC.get()+ins.p0);
         else if(ins.op==34)
             PC.set(PC.get()+ins.p1);
+        else
+            PC.set(PC.get()+4);
         // Insert new item into rob
         rob.tl.set(rob.tl.get()+1);
         const int pos=rob.tl.get()&(ROBcnt-1);
         rob.ok[pos].set(false);
         rob.op[pos].set(ins);
         rob.curPC[pos].set(PC.get());
-        if(ins.op<=24||ins.op==34||ins.op==36||ins.op==37)
+        if(ins.op<=24||(ins.op>=34&&ins.op<=37))
             rob.dest[pos].set(ins.p0);
         // Insert new item into lsb
         if(ins.op>=20&&ins.op<=27)
@@ -66,7 +68,7 @@ inline void decoderWork()
                 lsb.qd[pos].set(0);
         }
         // Insert new item into rs
-        if(ins.op<=34||ins.op==36||ins.op==37)
+        if(ins.op<=37)
             for(int i=0;i<ROBcnt;i++)
                 if(!rs.busy[i].get())
                 {
@@ -76,6 +78,17 @@ inline void decoderWork()
                     {
                         rs.vj[i].set(PC.get()),rs.vk[i].set(4);
                         rs.qj[i].set(0),rs.qk[i].set(0);
+                    }
+                    if(ins.op==35)
+                    {
+                        rs.vk[i].set(PC.get()+4),rs.qk[i].set(0);
+                        if(rf.busy[ins.p1].get())
+                            rs.qj[i].set(rf.robID[ins.p1].get());
+                        else
+                        {
+                            rs.vj[i].set(rf.reg[ins.p1].get());
+                            rs.qj[i].set(0);
+                        }
                     }
                     if(ins.op==36)
                     {
@@ -122,7 +135,7 @@ inline void decoderWork()
                     break;
                 }
         // Change RF status
-        if(ins.op<=24||ins.op==34||ins.op==36||ins.op==37)
+        if(ins.op<=24||(ins.op>=34&&ins.op<=37))
         {
             rf.busy[ins.p0].set(true);
             rf.robID[ins.p0].set(rob.tl.get());

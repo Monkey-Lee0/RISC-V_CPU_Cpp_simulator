@@ -14,16 +14,16 @@ inline void lsbWork()
         for(int i=lsb.hd.get();i<lsb.tl.get();i++)
         {
             const auto pos=i&(LSBcnt-1);
-            if(lsb.qd[i].get()==rob.castID.get())
+            if(lsb.qd[pos].get()==rob.castID.get())
             {
-                lsb.data[i].set(rob.result.get());
-                lsb.qd[i].set(0);
+                lsb.data[pos].set(rob.result.get());
+                lsb.qd[pos].set(0);
             }
         }
     for(int i=0;i<ALUcnt;i++)
         if(AGU.ok[i].get())
         {
-            std::cerr<<"Clock "<<Clk<<" AGU-"<<i<<" broadcast ["<<AGU.ID[i].get()<<","<<AGU.output[i].get()<<"]"<<std::endl;
+            // std::cerr<<"Clock "<<Clk<<" AGU-"<<i<<" broadcast ["<<AGU.ID[i].get()<<","<<AGU.output[i].get()<<"]"<<std::endl;
             AGU.ok[i].set(false);
             AGU.busy[i].set(false);
             lsb.addr[AGU.ID[i].get()&(LSBcnt-1)].set(AGU.output[i].get());
@@ -54,15 +54,15 @@ inline void lsbWork()
                 lsb.ok[pos].set(true);
             }
         }
-        if(!lsb.ok[pos].get()&&op<=24&&!Dmem.busy.get())
+        if(!lsb.ok[pos].get()&&op<=24&&!Dmem.busy.get()&&!lsb.qa[pos].get())
         {
             Dmem.busy.set(true);
             Dmem.addr.set(lsb.addr[pos].get());
             Dmem.clk.set(Clk);
             Dmem.typ.set(true);
         }
-        if(!rob.ok[lsb.robID[pos].get()].get()&&op>24&&!lsb.qa[pos].get()&&!lsb.qd[pos].get())
-            rob.ok[lsb.robID[pos].get()].set(true);
+        if(!rob.ok[lsb.robID[pos].get()&(ROBcnt-1)].get()&&op>24&&!lsb.qa[pos].get()&&!lsb.qd[pos].get())
+            rob.ok[lsb.robID[pos].get()&(ROBcnt-1)].set(true);
     }
 }
 

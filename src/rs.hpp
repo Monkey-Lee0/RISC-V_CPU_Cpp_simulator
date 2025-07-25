@@ -46,6 +46,26 @@ inline void rsWork()
                         break;
                     }
                 }
+            else if(rs.op[i].get().op==35)
+                for(int j=0;j<ALUcnt;j++)
+                {
+                    if(!ALU.busy[j].get())
+                    {
+                        rs.busy[i].set(false);
+                        IFC.bubble.set(false);
+                        unsigned int newPC=rs.vj[i].get()+rs.op[i].get().p2;
+                        if(newPC&1)
+                            newPC^=1;
+                        IFC.predictedPC.set(newPC);
+                        PC.set(newPC);
+                        ALU.busy[j].set(true);
+                        ALU.op[j].set(rs.op[i].get());
+                        ALU.s1[j].set(rs.vk[i].get());
+                        ALU.s2[j].set(0);
+                        ALU.ID[j].set(rs.dest[i].get());
+                        break;
+                    }
+                }
             else if(rs.op[i].get().op<=27)
                 for(int j=0;j<ALUcnt;j++)
                 {

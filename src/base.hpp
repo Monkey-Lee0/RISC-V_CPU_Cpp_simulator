@@ -315,9 +315,9 @@ public:
 };
 inline ReOrderBuffer rob;
 
+inline std::unordered_map<unsigned int,unsigned int> mem;
 class Memory
 {
-    std::unordered_map<unsigned int, unsigned int> mem;
 public:
     chronicVariant<unsigned int> addr,clk,val[16],bytes,output[16];// bytes->bytes to write
     chronicVariant<bool> typ,busy,ok;// typ->true read;false write
@@ -353,6 +353,16 @@ public:
 };
 inline Memory Dmem,Imem;
 
+class IFetchCache
+{
+public:
+    chronicVariant<unsigned int> q[64];
+    chronicVariant<unsigned int> hd,tl;
+    chronicVariant<unsigned int> predictedPC; // the PC of tl
+    chronicVariant<bool> bubble;
+};
+inline IFetchCache IFC;
+
 constexpr int RScnt=8;
 class ReservationStations
 {
@@ -373,7 +383,7 @@ class RegisterFile
 public:
     chronicVariant<bool> busy[32];
     chronicVariant<unsigned int> robID[32];
-    chronicVariant<unsigned int> reg[32];
+    chronicVariant<int> reg[32];
 };
 inline RegisterFile rf;
 
@@ -399,9 +409,10 @@ public:
     chronicVariant<unsigned int> addr[LSBcnt];
     chronicVariant<unsigned int> qa[LSBcnt]; // address waiting for which item
     chronicVariant<unsigned int> data[LSBcnt];
-    chronicVariant<unsigned int> qd[LSBcnt]; // data wating for which item
+    chronicVariant<unsigned int> qd[LSBcnt]; // data waiting for which item
     chronicVariant<unsigned int> output[LSBcnt];
     chronicVariant<unsigned int> robID[LSBcnt];
+    LoadStoreBuffer():hd(1),tl(1){}
 };
 inline LoadStoreBuffer lsb;
 

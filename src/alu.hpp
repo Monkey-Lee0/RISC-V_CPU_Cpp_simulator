@@ -19,7 +19,7 @@ inline void aluWork()
         {
             ALU.ok[i].set(true);
             const auto id=ALU.op[i].get().op;
-            if(id==1||id==11||id==34||id==36||id==37)
+            if(id==1||id==11||id==34||id==35||id==36||id==37)
                 ALU.output[i].set(ALU.s1[i].get()+ALU.s2[i].get());
             else if(id==2)
                 ALU.output[i].set(ALU.s1[i].get()-ALU.s2[i].get());

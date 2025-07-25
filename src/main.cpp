@@ -21,11 +21,12 @@ void work()
         rsWork();
         decoderWork();
         bpuWork();
-        IFC.work();
+        IFCwork();
         aluWork();
         Imem.work();
-        if(Clk==10000)
-            break;
+        rf.reg[0].set(0);
+        rf.robID[0].set(0);
+        rf.busy[0].set(false);
     }
 }
 int main()
