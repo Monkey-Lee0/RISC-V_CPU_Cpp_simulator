@@ -266,41 +266,75 @@ inline void decoderWork()
         const int pos=rob.tl.get()&(ROBcnt-1);
         rob.ok[pos].set(false);
         rob.op[pos].set(ins);
-        if(ins.op<=19)
+        if(ins.op<=24)
             rob.dest[pos].set(ins.p0);
-        // Insert new item into rs
-        for(int i=0;i<ROBcnt;i++)
-            if(!rs.busy[i].get())
+        else if(ins.op<=27)
+            rob.dest[pos].set(255);
+        // Insert new item into lsb
+        if(ins.op>=20&&ins.op<=27)
+        {
+            const unsigned int pos=lsb.tl.get()&(LSBcnt-1);
+            lsb.tl.set(lsb.tl.get()+1);
+            lsb.ok[pos].set(false);
+            lsb.op[pos].set(ins);
+            lsb.qa[pos].set(rob.tl.get());
+            lsb.robID[pos].set(rob.tl.get());
+            if(ins.op>=25)
             {
-                rs.busy[i].set(true);
-                rs.op[i].set(ins);
-                if(ins.op<=19)
+                if(rf.busy[ins.p2].get())
+                    lsb.qd[pos].set(rf.robID[ins.p2].get());
+                else
                 {
-                    if(rf.busy[ins.p1].get())
-                        rs.qj[i].set(rf.robID[ins.p1].get());
-                    else
-                    {
-                        rs.vj[i].set(rf.reg[ins.p1].get());
-                        rs.qj[i].set(0);
-                    }
+                    lsb.data[pos].set(rf.reg[ins.p2].get());
+                    lsb.qd[pos].set(0);
                 }
-                if(ins.op<=10)
+            }
+            else
+                lsb.qd[pos].set(0);
+        }
+        // Insert new item into rs
+        if(ins.op<=27)
+            for(int i=0;i<ROBcnt;i++)
+                if(!rs.busy[i].get())
                 {
-                    if(rf.busy[ins.p2].get())
-                        rs.qk[i].set(rf.robID[ins.p2].get());
-                    else
+                    rs.busy[i].set(true);
+                    rs.op[i].set(ins);
+                    if(ins.op<=27)
                     {
-                        rs.vk[i].set(rf.reg[ins.p2].get());
+                        if(rf.busy[ins.p1].get())
+                            rs.qj[i].set(rf.robID[ins.p1].get());
+                        else
+                        {
+                            rs.vj[i].set(rf.reg[ins.p1].get());
+                            rs.qj[i].set(0);
+                        }
+                    }
+                    if(ins.op<=10)
+                    {
+                        if(rf.busy[ins.p2].get())
+                            rs.qk[i].set(rf.robID[ins.p2].get());
+                        else
+                        {
+                            rs.vk[i].set(rf.reg[ins.p2].get());
+                            rs.qk[i].set(0);
+                        }
+                    }
+                    else if(ins.op<=27)
+                    {
+                        if(ins.op<=24)
+                            rs.A[i].set(ins.p2);
+                        else
+                            rs.A[i].set(ins.p0);
                         rs.qk[i].set(0);
                     }
+                    if(ins.op<=19)
+                        rs.dest[i].set(rob.tl.get());
+                    else
+                        rs.dest[i].set(lsb.tl.get());
+                    break;
                 }
-                else if(ins.op<=19)
-                    rs.A[i].set(ins.p2);
-                rs.dest[i].set(rob.tl.get());
-                break;
-            }
         // Change RF status
-        if(ins.op<=19)
+        if(ins.op<=24)
         {
             rf.busy[ins.p0].set(true);
             rf.robID[ins.p0].set(rob.tl.get());

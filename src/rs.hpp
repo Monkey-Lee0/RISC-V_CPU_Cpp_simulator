@@ -23,21 +23,35 @@ inline void rsWork()
     for(int i=0;i<RScnt;i++)
         if(rs.busy[i].get()&&!rs.qj[i].get()&&!rs.qk[i].get())
         {
-            for(int j=0;j<ALUcnt;j++)
-                if(!ALU.busy[j].get())
+            if(rs.op[i].get().op<=19)
+                for(int j=0;j<ALUcnt;j++)
                 {
-                    rs.busy[i].set(false);
-                    ALU.busy[j].set(true);
-                    ALU.op[j].set(rs.op[i].get());
-                    ALU.s1[j].set(rs.vj[i].get());
-                    if(rs.op[i].get().op<=10)
-                        ALU.s2[j].set(rs.vk[i].get());
-                    else if(rs.op[i].get().op<=19)
-                        ALU.s2[j].set(rs.A[i].get());
-                    ALU.robID[j].set(rs.dest[i].get());
-                    break;
+                    if(!ALU.busy[j].get())
+                    {
+                        rs.busy[i].set(false);
+                        ALU.busy[j].set(true);
+                        ALU.op[j].set(rs.op[i].get());
+                        ALU.s1[j].set(rs.vj[i].get());
+                        if(rs.op[i].get().op<=10)
+                            ALU.s2[j].set(rs.vk[i].get());
+                        else if(rs.op[i].get().op<=19)
+                            ALU.s2[j].set(rs.A[i].get());
+                        ALU.ID[j].set(rs.dest[i].get());
+                        break;
+                    }
                 }
-            break;
+            else if(rs.op[i].get().op<=27)
+                for(int j=0;j<ALUcnt;j++)
+                    if(!AGU.busy[j].get())
+                    {
+                        rs.busy[i].set(false);
+                        AGU.busy[j].set(true);
+                        AGU.op[j].set(rs.op[i].get());
+                        AGU.s1[j].set(rs.vj[i].get());
+                        AGU.s2[j].set(rs.A[i].get());
+                        AGU.ID[j].set(rs.dest[i].get());
+                        break;
+                    }
         }
 }
 

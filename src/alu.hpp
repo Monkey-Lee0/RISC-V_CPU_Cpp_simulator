@@ -33,4 +33,14 @@ inline void aluWork()
         }
 }
 
+inline void aguWork()
+{
+    for(int i=0;i<ALUcnt;i++)
+        if(AGU.busy[i].get()&&!AGU.ok[i].get())
+        {
+            AGU.ok[i].set(true);
+            AGU.output[i].set(AGU.s1[i].get()+AGU.s2[i].get());
+        }
+}
+
 #endif

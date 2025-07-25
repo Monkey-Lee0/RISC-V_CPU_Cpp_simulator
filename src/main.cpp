@@ -14,14 +14,15 @@ void work()
         tick();
         // some units work here.
         // the sequence can be changed arbitrarily.
-        aluWork();
-        lsbWork();
+        aguWork();
+        Dmem.work();
         robWork();
+        lsbWork();
+        rsWork();
         decoderWork();
         IFC.work();
-        rsWork();
+        aluWork();
         Imem.work();
-        Dmem.work();
         if(Clk==10000)
             break;
     }

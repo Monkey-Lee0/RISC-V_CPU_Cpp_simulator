@@ -77,7 +77,13 @@ public:
             else
                 for(int i=0;i<bytes.get();i++)
                     mem[addr.get()+i]=val[i].get();
-            ok.set(true);
+            if(typ.get())
+                ok.set(true);
+            else
+            {
+                ok.set(false);
+                busy.set(false);
+            }
         }
     }
     void init(const unsigned int addr,const unsigned int val){mem[addr]=val;}
@@ -109,16 +115,16 @@ public:
 inline RegisterFile rf;
 
 constexpr int ALUcnt=8;
-class ArithmeticLogicUnit
+class FunctionalUnit
 {
 public:
     chronicVariant<bool> busy[ALUcnt],ok[ALUcnt];
     chronicVariant<instruction> op[ALUcnt];
     chronicVariant<int> s1[ALUcnt],s2[ALUcnt];
-    chronicVariant<unsigned int> robID[ALUcnt];
+    chronicVariant<unsigned int> ID[ALUcnt];
     chronicVariant<int> output[ALUcnt];
 };
-inline ArithmeticLogicUnit ALU;
+inline FunctionalUnit ALU,AGU;
 
 constexpr int ROBcnt=8;
 class ReOrderBuffer
@@ -136,8 +142,19 @@ public:
 };
 inline ReOrderBuffer rob;
 
+constexpr int LSBcnt=8;
 class LoadStoreBuffer
 {
+public:
+    chronicVariant<bool> ok[LSBcnt];
+    chronicVariant<unsigned int> hd,tl;
+    chronicVariant<instruction> op[LSBcnt];
+    chronicVariant<unsigned int> addr[LSBcnt];
+    chronicVariant<unsigned int> qa[LSBcnt]; // address waiting for which item
+    chronicVariant<unsigned int> data[LSBcnt];
+    chronicVariant<unsigned int> qd[LSBcnt]; // data wating for which item
+    chronicVariant<unsigned int> output[LSBcnt];
+    chronicVariant<unsigned int> robID[LSBcnt];
 };
 inline LoadStoreBuffer lsb;
 
