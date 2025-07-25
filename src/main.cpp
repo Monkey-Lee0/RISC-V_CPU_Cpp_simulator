@@ -20,6 +20,7 @@ void work()
         lsbWork();
         rsWork();
         decoderWork();
+        bpuWork();
         IFC.work();
         aluWork();
         Imem.work();
@@ -30,10 +31,12 @@ void work()
 int main()
 {
     // std::string input;
+    // std::string result;
     // while(true)
     // {
     //     std::getline(std::cin,input);
-    //     std::cout<<hexize(coder(strToInstruction(input)))<<std::endl;
+    //     result+=hexize(coder(strToInstruction(input)))+" ";
+    //     std::cout<<result<<std::endl;
     //     std::cout<<instructionDecoder(coder(strToInstruction(input)))<<std::endl;
     // }
     char ch[30];

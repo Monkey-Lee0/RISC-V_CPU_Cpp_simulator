@@ -5,6 +5,15 @@
 
 inline void robWork()
 {
+    if(rob.flush.get())
+    {
+        rob.flush.set(false);
+        rob.tl.set(rob.hd.get());
+        // clear rf
+        for(auto &i:rf.busy)
+            i.set(false);
+        return ;
+    }
     // listen ALU
     for(int i=0;i<8;i++)
         if(ALU.ok[i].get())
@@ -14,6 +23,28 @@ inline void robWork()
             ALU.busy[i].set(false);
             const unsigned int pos=ALU.ID[i].get()&(ROBcnt-1);
             rob.val[pos].set(ALU.output[i].get());
+            rob.ok[pos].set(true);
+        }
+    // listen AGU
+    for(int i=0;i<8;i++)
+        if(AGU.ok[i].get())
+        {
+            std::cerr<<"Clock "<<Clk<<" BPU-"<<i<<" broadcast ["<<AGU.ID[i].get()<<","<<AGU.output[i].get()<<"]"<<std::endl;
+            AGU.ok[i].set(false);
+            AGU.busy[i].set(false);
+            const unsigned int pos=AGU.ID[i].get()&(ROBcnt-1);
+            rob.val[pos].set(AGU.output[i].get());
+            rob.ok[pos].set(true);
+        }
+    // listen BPU
+    for(int i=0;i<8;i++)
+        if(BPU.ok[i].get())
+        {
+            std::cerr<<"Clock "<<Clk<<" BPU-"<<i<<" broadcast ["<<BPU.ID[i].get()<<","<<BPU.output[i].get()<<"]"<<std::endl;
+            BPU.ok[i].set(false);
+            BPU.busy[i].set(false);
+            const unsigned int pos=BPU.ID[i].get()&(ROBcnt-1);
+            rob.val[pos].set(BPU.output[i].get());
             rob.ok[pos].set(true);
         }
     // listen to lsb
@@ -44,13 +75,23 @@ inline void robWork()
             rob.castID.set(rob.hd.get());
             rob.result.set(rob.val[pos].get());
             std::cerr<<"Clock "<<Clk<<" ROB broadcast "<<"["<<rob.hd.get()<<","<<rob.val[pos].get()<<"]"<<std::endl;
+            // check branch
+            if(op>=28&&op<=33&&!rob.val[pos].get())
+            {
+                // flush
+                std::cerr<<"Clock "<<Clk<<" Branch error!"<<std::endl;
+                rob.flush.set(true);
+                rob.rightPC.set(rob.curPC[pos].get());
+                return ;
+            }
             // write register
             const auto dest=rob.dest[pos].get();
             if(op<=19)
             {
-                if(rf.busy[dest].get()&&rf.robID[dest].get()==rob.hd.get())
+                if(rf.busy[dest].get())
                 {
-                    rf.busy[dest].set(false);
+                    if(rf.robID[dest].get()==rob.hd.get())
+                        rf.busy[dest].set(false);
                     rf.reg[dest].set(rob.val[pos].get());
                 }
             }

@@ -5,6 +5,11 @@
 
 inline void lsbWork()
 {
+    if(rob.flush.get())
+    {
+        lsb.tl.set(lsb.hd.get());
+        return ;
+    }
     if(rob.clk.get()==Clk) // new-completed
         for(int i=lsb.hd.get();i<lsb.tl.get();i++)
         {

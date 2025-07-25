@@ -5,6 +5,15 @@
 
 inline void aluWork()
 {
+    if(rob.flush.get())
+    {
+        for(int i=0;i<ALUcnt;i++)
+        {
+            ALU.busy[i].set(false);
+            ALU.ok[i].set(false);
+        }
+        return ;
+    }
     for(int i=0;i<ALUcnt;i++)
         if(ALU.busy[i].get()&&!ALU.ok[i].get())
         {
@@ -35,11 +44,53 @@ inline void aluWork()
 
 inline void aguWork()
 {
+    if(rob.flush.get())
+    {
+        for(int i=0;i<ALUcnt;i++)
+        {
+            AGU.busy[i].set(false);
+            AGU.ok[i].set(false);
+        }
+        return ;
+    }
     for(int i=0;i<ALUcnt;i++)
         if(AGU.busy[i].get()&&!AGU.ok[i].get())
         {
             AGU.ok[i].set(true);
             AGU.output[i].set(AGU.s1[i].get()+AGU.s2[i].get());
+        }
+}
+
+inline void bpuWork()
+{
+    if(rob.flush.get())
+    {
+        for(int i=0;i<ALUcnt;i++)
+        {
+            BPU.busy[i].set(false);
+            BPU.ok[i].set(false);
+        }
+        return ;
+    }
+    for(int i=0;i<ALUcnt;i++)
+        if(BPU.busy[i].get()&&!BPU.ok[i].get())
+        {
+            BPU.ok[i].set(true);
+            const auto id=BPU.op[i].get().op;
+            if(id==28)
+                BPU.output[i].set(BPU.s1[i].get()==BPU.s2[i].get());
+            if(id==29)
+                BPU.output[i].set(BPU.s1[i].get()>=BPU.s2[i].get());
+            if(id==30)
+                BPU.output[i].set(static_cast<unsigned int>(BPU.s1[i].get())>=
+                    static_cast<unsigned int>(BPU.s2[i].get()));
+            if(id==31)
+                BPU.output[i].set(BPU.s1[i].get()<BPU.s2[i].get());
+            if(id==32)
+                BPU.output[i].set(static_cast<unsigned int>(BPU.s1[i].get())<
+                static_cast<unsigned int>(BPU.s2[i].get()));
+            if(id==33)
+                BPU.output[i].set(BPU.s1[i].get()!=BPU.s2[i].get());
         }
 }
 
