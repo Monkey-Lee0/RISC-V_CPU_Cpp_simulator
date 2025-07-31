@@ -6,8 +6,8 @@
 #include"lsb.hpp"
 #include"rob.hpp"
 #include"rs.hpp"
-#include"coder.hpp"
-void work()
+
+[[noreturn]] void work()
 {
     while(true)
     {
@@ -54,10 +54,8 @@ int main()
         }
         if(ch[0]=='!')
             break;
-        Imem.init(addr,(singleHexToDec(ch[0])<<4)|singleHexToDec(ch[1]));
+        Memory::init(addr,(singleHexToDec(ch[0])<<4)|singleHexToDec(ch[1]));
         addr++;
     }
     work();
-
-    return 0;
 }

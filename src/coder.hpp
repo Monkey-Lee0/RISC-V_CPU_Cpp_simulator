@@ -25,7 +25,7 @@ inline std::string hexize(unsigned int ins)
 
 unsigned int coder(const instruction a)
 {
-    const unsigned int op=a.op;
+    const unsigned int op=static_cast<int>(a.op);
     if(op>=1&&op<=10)
     {
         const unsigned int p0=static_cast<unsigned int>(a.p0<<27)>>27,p1=static_cast<unsigned int>(a.p1<<27)>>27,

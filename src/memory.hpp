@@ -27,17 +27,17 @@ inline void IFCwork()
             {
                 const auto ins=instructionDecoder(Imem.output[i-3].get()|(Imem.output[i-2].get()<<8)|
                     (Imem.output[i-1].get()<<16)|(Imem.output[i].get()<<24));
-                if(ins.op>=28&&ins.op<=33)
+                if(ins.op>=OP::BEQ&&ins.op<=OP::BNE)
                 {
                     nPC+=ins.p0;
                     break;
                 }
-                if(ins.op==34)
+                if(ins.op==OP::JAL)
                 {
                     nPC+=ins.p1;
                     break;
                 }
-                if(ins.op==35)
+                if(ins.op==OP::JALR)
                 {
                     IFC.bubble.set(true);
                     break;

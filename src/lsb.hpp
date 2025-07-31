@@ -40,28 +40,28 @@ inline void lsbWork()
             if(Dmem.typ.get())
             {
                 int res=0;
-                if(op==20)
+                if(op==OP::LB)
                     res=static_cast<int>(Dmem.output[0].get()<<24)>>24;
-                if(op==21)
+                if(op==OP::LBU)
                     res=Dmem.output[0].get();
-                if(op==22)
+                if(op==OP::LH)
                     res=static_cast<int>(((Dmem.output[1].get()<<8)|Dmem.output[0].get())<<16)>>16;
-                if(op==23)
+                if(op==OP::LHU)
                     res=(Dmem.output[1].get()<<8)|Dmem.output[0].get();
-                if(op==24)
+                if(op==OP::LW)
                     res=(Dmem.output[3].get()<<24)|(Dmem.output[2].get()<<16)|(Dmem.output[1].get()<<8)|Dmem.output[0].get();
                 lsb.output[pos].set(res);
                 lsb.ok[pos].set(true);
             }
         }
-        if(!lsb.ok[pos].get()&&op<=24&&!Dmem.busy.get()&&!lsb.qa[pos].get())
+        if(!lsb.ok[pos].get()&&op<=OP::LW&&!Dmem.busy.get()&&!lsb.qa[pos].get())
         {
             Dmem.busy.set(true);
             Dmem.addr.set(lsb.addr[pos].get());
             Dmem.clk.set(Clk);
             Dmem.typ.set(true);
         }
-        if(!rob.ok[lsb.robID[pos].get()&(ROBcnt-1)].get()&&op>24&&!lsb.qa[pos].get()&&!lsb.qd[pos].get())
+        if(!rob.ok[lsb.robID[pos].get()&(ROBcnt-1)].get()&&op>OP::LW&&!lsb.qa[pos].get()&&!lsb.qd[pos].get())
             rob.ok[lsb.robID[pos].get()&(ROBcnt-1)].set(true);
     }
 }

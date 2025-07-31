@@ -29,7 +29,8 @@ inline void rsWork()
     for(int i=0;i<RScnt;i++)
         if(rs.busy[i].get()&&!rs.qj[i].get()&&!rs.qk[i].get())
         {
-            if(rs.op[i].get().op<=19||rs.op[i].get().op==34||rs.op[i].get().op==36||rs.op[i].get().op==37)
+            if(rs.op[i].get().op<=OP::SLTIU||rs.op[i].get().op==OP::JAL||
+                rs.op[i].get().op==OP::AUIPC||rs.op[i].get().op==OP::LUI)
                 for(int j=0;j<ALUcnt;j++)
                 {
                     if(!ALU.busy[j].get())
@@ -38,15 +39,16 @@ inline void rsWork()
                         ALU.busy[j].set(true);
                         ALU.op[j].set(rs.op[i].get());
                         ALU.s1[j].set(rs.vj[i].get());
-                        if(rs.op[i].get().op<=10||rs.op[i].get().op==34||rs.op[i].get().op==36||rs.op[i].get().op==37)
+                        if(rs.op[i].get().op<=OP::SLTU||rs.op[i].get().op==OP::JAL||
+                            rs.op[i].get().op==OP::AUIPC||rs.op[i].get().op==OP::LUI)
                             ALU.s2[j].set(rs.vk[i].get());
-                        else if(rs.op[i].get().op<=19)
+                        else if(rs.op[i].get().op<=OP::SLTIU)
                             ALU.s2[j].set(rs.A[i].get());
                         ALU.ID[j].set(rs.dest[i].get());
                         break;
                     }
                 }
-            else if(rs.op[i].get().op==35)
+            else if(rs.op[i].get().op==OP::JALR)
                 for(int j=0;j<ALUcnt;j++)
                 {
                     if(!ALU.busy[j].get())
@@ -66,7 +68,7 @@ inline void rsWork()
                         break;
                     }
                 }
-            else if(rs.op[i].get().op<=27)
+            else if(rs.op[i].get().op<=OP::SW)
                 for(int j=0;j<ALUcnt;j++)
                 {
                     if(!AGU.busy[j].get())
@@ -80,7 +82,7 @@ inline void rsWork()
                         break;
                     }
                 }
-            else if(rs.op[i].get().op<=33)
+            else if(rs.op[i].get().op<=OP::BNE)
                 for(int j=0;j<ALUcnt;j++)
                     if(!BPU.busy[j].get())
                     {

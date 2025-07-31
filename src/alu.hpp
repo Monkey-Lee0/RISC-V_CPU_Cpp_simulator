@@ -19,25 +19,25 @@ inline void aluWork()
         {
             ALU.ok[i].set(true);
             const auto id=ALU.op[i].get().op;
-            if(id==1||id==11||id==34||id==35||id==36||id==37)
+            if(id==OP::ADD||id==OP::ADDI||id==OP::JAL||id==OP::JALR||id==OP::AUIPC||id==OP::LUI)
                 ALU.output[i].set(ALU.s1[i].get()+ALU.s2[i].get());
-            else if(id==2)
+            else if(id==OP::SUB)
                 ALU.output[i].set(ALU.s1[i].get()-ALU.s2[i].get());
-            else if(id==3||id==12)
+            else if(id==OP::AND||id==OP::ANDI)
                 ALU.output[i].set(ALU.s1[i].get()&ALU.s2[i].get());
-            else if(id==4||id==13)
+            else if(id==OP::OR||id==OP::ORI)
                 ALU.output[i].set(ALU.s1[i].get()|ALU.s2[i].get());
-            else if(id==5||id==14)
+            else if(id==OP::XOR||id==OP::XORI)
                 ALU.output[i].set(ALU.s1[i].get()^ALU.s2[i].get());
-            else if(id==6||id==15)
+            else if(id==OP::SLL||id==OP::SLLI)
                 ALU.output[i].set(ALU.s1[i].get()<<ALU.s2[i].get());
-            else if(id==7||id==16)
+            else if(id==OP::SRL||id==OP::SRLI)
                 ALU.output[i].set(static_cast<unsigned int>(ALU.s1[i].get())>>ALU.s2[i].get());
-            else if(id==8||id==17)
+            else if(id==OP::SRA||id==OP::SRAI)
                 ALU.output[i].set(ALU.s1[i].get()>>ALU.s2[i].get());
-            else if(id==9||id==18)
+            else if(id==OP::SLT||id==OP::SLTI)
                 ALU.output[i].set(ALU.s1[i].get()<ALU.s2[i].get());
-            else if(id==10||id==19)
+            else if(id==OP::SLTU||id==OP::SLTIU)
                 ALU.output[i].set(static_cast<unsigned int>(ALU.s1[i].get())<static_cast<unsigned int>(ALU.s2[i].get()));
         }
 }
@@ -77,19 +77,19 @@ inline void bpuWork()
         {
             BPU.ok[i].set(true);
             const auto id=BPU.op[i].get().op;
-            if(id==28)
+            if(id==OP::BEQ)
                 BPU.output[i].set(BPU.s1[i].get()==BPU.s2[i].get());
-            if(id==29)
+            if(id==OP::BGE)
                 BPU.output[i].set(BPU.s1[i].get()>=BPU.s2[i].get());
-            if(id==30)
+            if(id==OP::BGEU)
                 BPU.output[i].set(static_cast<unsigned int>(BPU.s1[i].get())>=
                     static_cast<unsigned int>(BPU.s2[i].get()));
-            if(id==31)
+            if(id==OP::BLT)
                 BPU.output[i].set(BPU.s1[i].get()<BPU.s2[i].get());
-            if(id==32)
+            if(id==OP::BLTU)
                 BPU.output[i].set(static_cast<unsigned int>(BPU.s1[i].get())<
                 static_cast<unsigned int>(BPU.s2[i].get()));
-            if(id==33)
+            if(id==OP::BNE)
                 BPU.output[i].set(BPU.s1[i].get()!=BPU.s2[i].get());
         }
 }

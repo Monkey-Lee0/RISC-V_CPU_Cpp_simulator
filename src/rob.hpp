@@ -40,8 +40,8 @@ inline void robWork()
     if(lsb.hd.get()!=lsb.tl.get())
     {
         const unsigned int pos=lsb.hd.get()&(LSBcnt-1);
-        const int op=lsb.op[pos].get().op;
-        if(op<=24&&lsb.ok[pos].get())
+        const auto op=lsb.op[pos].get().op;
+        if(op<=OP::LW&&lsb.ok[pos].get())
         {
             rob.val[lsb.robID[pos].get()&(ROBcnt-1)].set(lsb.output[pos].get());
             // std::cerr<<"Clock "<<Clk<<" LSB broadcast ["<<lsb.robID[pos].get()<<","<<lsb.output[pos].get()<<"]"<<std::endl;
@@ -54,7 +54,7 @@ inline void robWork()
     {
         const unsigned int pos=rob.hd.get()&(ROBcnt-1);
         const auto op=rob.op[pos].get().op;
-        if(op>=25&&op<=27&&Dmem.busy.get()) // cannot commit if Dmem is working.
+        if(op>=OP::SB&&op<=OP::SW&&Dmem.busy.get()) // cannot commit if Dmem is working.
             return ;
         if(rob.ok[pos].get())
         {
@@ -66,7 +66,7 @@ inline void robWork()
             rob.result.set(rob.val[pos].get());
             // std::cerr<<"Clock "<<Clk<<" ROB broadcast "<<"["<<rob.hd.get()<<","<<rob.val[pos].get()<<"]"<<" "<<rob.curPC[pos].get()<<" "<<rob.op[pos].get()<<std::endl;
             // check branch
-            if(op>=28&&op<=33&&!rob.val[pos].get())
+            if(op>=OP::BEQ&&op<=OP::BNE&&!rob.val[pos].get())
             {
                 // flush
                 // std::cerr<<"Clock "<<Clk<<" Branch error!"<<std::endl;
@@ -75,7 +75,8 @@ inline void robWork()
                 return ;
             }
             // check exit
-            if(rob.op[pos].get().op==11&&rob.op[pos].get().p0==10&&rob.op[pos].get().p1==0&&rob.op[pos].get().p2==255)
+            if(rob.op[pos].get().op==OP::ADDI&&rob.op[pos].get().p0==10&&
+                rob.op[pos].get().p1==0&&rob.op[pos].get().p2==255)
             {
                 // std::cout<<"return value "<<(rf.reg[10].get()&255)<<std::endl;
                 std::cout<<(rf.reg[10].get()&255)<<std::endl;
@@ -84,7 +85,7 @@ inline void robWork()
             }
             // write register
             const auto dest=rob.dest[pos].get();
-            if(op<=24||(op>=34&&op<=37))
+            if(op<=OP::LW||(op>=OP::JAL&&op<=OP::LUI))
             {
                 if(rf.busy[dest].get())
                 {
@@ -94,7 +95,7 @@ inline void robWork()
                 }
             }
             // write memory
-            if(op>=25&&op<=27)
+            if(op>=OP::SB&&op<=OP::SW)
             {
                 const auto LSBpos=lsb.hd.get()&(LSBcnt-1);
                 const auto data=lsb.data[LSBpos].get();
@@ -103,18 +104,18 @@ inline void robWork()
                 Dmem.typ.set(false);
                 Dmem.clk.set(Clk);
                 Dmem.addr.set(lsb.addr[LSBpos].get());
-                if(op==25)
+                if(op==OP::SB)
                 {
                     Dmem.bytes.set(1);
                     Dmem.val[0].set(data&255);
                 }
-                if(op==26)
+                if(op==OP::SH)
                 {
                     Dmem.bytes.set(2);
                     Dmem.val[0].set(data&255);
                     Dmem.val[1].set((data>>8)&255);
                 }
-                if(op==27)
+                if(op==OP::SW)
                 {
                     Dmem.bytes.set(4);
                     Dmem.val[0].set(data&255);

@@ -8,17 +8,28 @@
 inline unsigned int Clk=0;
 inline constexpr bool pseudo=true;
 
+enum class OP
+{
+    NONE,ADD,SUB,AND,OR,XOR,SLL,SRL,SRA,SLT,SLTU,ADDI,ANDI,ORI,XORI,SLLI,SRLI,SRAI,SLTI,SLTIU,LB,LBU,LH,LHU,LW,SB,SH,SW,
+    BEQ,BGE,BGEU,BLT,BLTU,BNE,JAL,JALR,AUIPC,LUI,EBREAK,ECALL
+};
+
+enum class REG
+{
+    ZERO,RA,SP,GP,TP,T0,T1,T2,S0,S1,A0,A1,A2,A3,A4,A5,A6,A7,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,T3,T4,T5,T6
+};
+
 class instruction
 {
 public:
-    int op;//name of operation
+    OP op;//name of operation
     int p0;//rd or something else
     int p1;//rs1 or something else
     int p2;//rs2 or something else
-    instruction():op(0),p0(0),p1(0),p2(0){}
-    instruction(const int op, const int p0, const int p1, const int p2):
+    instruction():op(OP::NONE),p0(0),p1(0),p2(0){}
+    instruction(const OP op, const int p0, const int p1, const int p2):
         op(op),p0(p0),p1(p1),p2(p2){}
-    explicit instruction(const int a):op(a),p0(0),p1(0),p2(0){}
+    explicit instruction(const int a):op(static_cast<OP>(a)),p0(0),p1(0),p2(0){}
 };
 inline unsigned int singleHexToDec(const char s)
 {
@@ -39,12 +50,13 @@ inline std::string regName(const int id)
         return "ukReg-"+std::to_string(id);
     return res[id];
 }
-inline std::string insName(const int id)
+inline std::string insName(const OP ins)
 {
     static constexpr std::string res[]={"","add","sub","and","or","xor","sll","srl","sra","slt","sltu",
     "addi","andi","ori","xori","slli","srli","srai","slti","sltiu","lb","lbu","lh","lhu",
     "lw","sb","sh","sw","beq","bge","bgeu","blt","bltu","bne","jal","jalr","auipc",
     "lui","ebreak","ecall"};
+    const auto id=static_cast<int>(ins);
     if(id<0||id>=40)
         return "ukIns-"+std::to_string(id);
     return res[id];
@@ -113,7 +125,7 @@ inline instruction instructionDecoder(const unsigned int ins)
         const int rd=(ins>>7)&31;
         const int rs1=(ins>>15)&31;
         const int rs2=(ins>>20)&31;
-        int op;
+        int op=0;
         if(funct3==0b000)
             op=funct7?2:1;
         else if(funct3==0b111)
@@ -130,7 +142,7 @@ inline instruction instructionDecoder(const unsigned int ins)
             op=9;
         else if(funct3==0b011)
             op=10;
-        return {op,rd,rs1,rs2};
+        return {static_cast<OP>(op),rd,rs1,rs2};
     }
     if(opcode==0b0010011)// type-I/I*(Arithmetic)
     {
@@ -139,7 +151,7 @@ inline instruction instructionDecoder(const unsigned int ins)
         const int rd=(ins>>7)&31;
         const int rs1=(ins>>15)&31;
         int imm=(ins>>20)&4095;
-        int op;
+        int op=0;
         if(funct3==0b000)
             op=11,imm=(imm<<20)>>20;
         else if(funct3==0b111)
@@ -156,7 +168,7 @@ inline instruction instructionDecoder(const unsigned int ins)
             op=18,imm=(imm<<20)>>20;
         else if(funct3==0b011)
             op=19;
-        return {op,rd,rs1,imm};
+        return {static_cast<OP>(op),rd,rs1,imm};
     }
     if(opcode==0b0000011)// type-I(Memory)
     {
@@ -175,7 +187,7 @@ inline instruction instructionDecoder(const unsigned int ins)
             op=23;
         else if(funct3==0b010)
             op=24;
-        return {op,rd,rs1,imm};
+        return {static_cast<OP>(op),rd,rs1,imm};
     }
     if(opcode==0b0100011)// type-S
     {
@@ -183,14 +195,14 @@ inline instruction instructionDecoder(const unsigned int ins)
         const int rs1=(ins>>15)&31;
         const int rs2=(ins>>20)&31;
         const int imm=(static_cast<int>(((ins>>7)&31)|(((ins>>25)&127)<<5))<<20)>>20;
-        int op;
+        int op=0;
         if(funct3==0b000)
             op=25;
         else if(funct3==0b001)
             op=26;
         else if(funct3==0b010)
             op=27;
-        return {op,imm,rs1,rs2};
+        return {static_cast<OP>(op),imm,rs1,rs2};
     }
     if(opcode==0b1100011)// type-B
     {
@@ -198,7 +210,7 @@ inline instruction instructionDecoder(const unsigned int ins)
         const int rs1=(ins>>15)&31;
         const int rs2=(ins>>20)&31;
         const int imm=(static_cast<int>((((ins>>8)&15))|(((ins>>25)&63)<<4)|(((ins>>7)&1)<<10)|(((ins>>31)&1)<<11))<<20)>>19;
-        int op;
+        int op=0;
         if(funct3==0b000)
             op=28;
         else if(funct3==0b101)
@@ -211,14 +223,14 @@ inline instruction instructionDecoder(const unsigned int ins)
             op=32;
         else if(funct3==0b001)
             op=33;
-        return {op,imm,rs1,rs2};
+        return {static_cast<OP>(op),imm,rs1,rs2};
     }
     if(opcode==0b1101111)// type-J
     {
         const int rd=(ins>>7)&31;
         const int imm=(static_cast<int>((((ins>>12)&255)<<11)|(((ins>>20)&1)<<10)|(((ins>>21)&1023))|(((ins>>31)&1)<<19))<<12)>>11;
         constexpr int op=34;
-        return {op,rd,imm,0};
+        return {static_cast<OP>(op),rd,imm,0};
     }
     if(opcode==0b1100111)// type-I(Control)
     {
@@ -226,21 +238,21 @@ inline instruction instructionDecoder(const unsigned int ins)
         const int rs1=(ins>>15)&31;
         const int imm=(((ins>>20)&4095)<<20)>>20;
         constexpr int op=35;
-        return {op,rd,rs1,imm};
+        return {static_cast<OP>(op),rd,rs1,imm};
     }
     if(opcode==0b0010111)// type-U(auipc)
     {
         const int rd=(ins>>7)&31;
         const int imm=(static_cast<int>((ins>>12)&1048575)<<12)>>12;
         constexpr int op=36;
-        return {op,rd,imm,0};
+        return {static_cast<OP>(op),rd,imm,0};
     }
     if(opcode==0b0110111)// type-U(lui)
     {
         const int rd=(ins>>7)&31;
         const int imm=(static_cast<int>((ins>>12)&1048575)<<12)>>12;
         constexpr int op=37;
-        return {op,rd,imm,0};
+        return {static_cast<OP>(op),rd,imm,0};
     }
     if(opcode==0b1110011)// type-I(Other)
     {
@@ -250,9 +262,9 @@ inline instruction instructionDecoder(const unsigned int ins)
             op=38;
         else
             op=39;
-        return {op,0,0,0};
+        return {static_cast<OP>(op),0,0,0};
     }
-    return {0,0,0,0};
+    return {OP::NONE,0,0,0};
 }
 
 struct copy
@@ -349,7 +361,7 @@ public:
             }
         }
     }
-    void init(const unsigned int addr,const unsigned int val){mem[addr]=val;}
+    static void init(const unsigned int addr,const unsigned int val){mem[addr]=val;}
 };
 inline Memory Dmem,Imem;
 
